@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="gu" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GapScanner India - ગઈકાલનો Close અને આજનો Open તફાવત</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter & Noto Sans Gujarati -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans Gujarati', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0b0f19',
+                        darkCard: '#131b2e',
+                        darkBorder: '#1f293d',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Gujarati', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2e3c56;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475b80;
+        }
+        .pulse-dot {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-darkCard/90 backdrop-blur-md border-b border-slate-200 dark:border-darkBorder">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+            <!-- Brand Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-bolt-lightning text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                            GapScanner Pro
+                        </h1>
+                        <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+                            NSE / BSE
+                        </span>
+                    </div>
+                    <p id="headerSubtitle" class="text-xs text-slate-500 dark:text-slate-400">
+                        ગઈકાલના Close અને આજના Open વચ્ચે સૌથી વધુ તફાવત ધરાવતા શેરો
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <!-- Language Switcher -->
+                <button onclick="toggleLanguage()" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-language text-indigo-400"></i>
+                    <span id="langBtnText">ગુજરાતી / EN</span>
+                </button>
+
+                <!-- Add Custom Stock / CSV Button -->
+                <button onclick="openAddStockModal()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span data-i18n="addStockBtn">નવો શેર ઉમેરો / CSV</span>
+                </button>
+
+                <!-- Simulate Market Scenario -->
+                <button onclick="simulateNewOpening()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition flex items-center gap-2" title="Refresh with new market opening prices">
+                    <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+                    <span data-i18n="refreshBtn">નવો ભાવ લોડ કરો</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition" aria-label="Toggle Theme">
+                    <i id="themeIcon" class="fa-solid fa-sun text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Formula Explanation Banner -->
+        <div class="bg-gradient-to-r from-indigo-950/80 via-slate-900 to-emerald-950/80 border border-indigo-500/30 rounded-2xl p-4 sm:p-5 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-300 bg-indigo-500/20 px-2.5 py-1 rounded-md">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span data-i18n="formulaBadge">ગણતરીની રીત (Gap Formula)</span>
+                </div>
+                <h2 class="text-base sm:text-lg font-bold pt-1" data-i18n="bannerTitle">
+                    આજનો ખુલતો ભાવ (Today's Open) − ગઈકાલનો બંધ ભાવ (Yesterday's Close) = ઓપનિંગ તફાવત (Gap Difference)
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-300" data-i18n="bannerSub">
+                    જે શેરમાં સવારે 9:15 વાગ્યે ખુલતાની સાથે જ ગઈકાલ કરતા સૌથી મોટો ઉછાળો (Gap Up) કે કડાકો (Gap Down) થયો હોય તેનું લિસ્ટ નીચે મુજબ છે.
+                </p>
+            </div>
+            <!-- Quick Calculator Trigger -->
+            <div class="flex items-center gap-3 self-stretch md:self-center bg-slate-900/90 p-3 rounded-xl border border-slate-700/80 shrink-0">
+                <div class="text-center px-2">
+                    <div class="text-[11px] text-slate-400" data-i18n="marketOpenTime">માર્કેટ ઓપનિંગ</div>
+                    <div class="text-sm font-bold text-emerald-400">09:15 AM IST</div>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="text-center px-2">
+                    <div class="text-[11px] text-slate-400" data-i18n="totalScanned">સ્કેન કરેલા શેર</div>
+                    <div class="text-sm font-bold text-white" id="totalStocksCount">20 શેરો</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 4 Highlight Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Card 1: Biggest % Gap Up -->
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full pointer-events-none"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span data-i18n="cardMaxGapUp">સૌથી મોટો Gap Up (%)</span>
+                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold" id="topGapUpPct">+0.00%</span>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-xl font-extrabold" id="topGapUpName">-</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="topGapUpPrices">Close: ₹0 → Open: ₹0</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs">
+                    <span class="text-slate-400" data-i18n="diffLabel">તફાવત:</span>
+                    <span class="font-bold text-emerald-500" id="topGapUpRs">+₹0.00</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Biggest % Gap Down -->
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-bl-full pointer-events-none"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                        <span data-i18n="cardMaxGapDown">સૌથી મોટો Gap Down (%)</span>
+                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 font-bold" id="topGapDownPct">-0.00%</span>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-xl font-extrabold" id="topGapDownName">-</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="topGapDownPrices">Close: ₹0 → Open: ₹0</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs">
+                    <span class="text-slate-400" data-i18n="diffLabel">તફાવત:</span>
+                    <span class="font-bold text-rose-500" id="topGapDownRs">-₹0.00</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Highest Rupee (₹) Difference -->
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-bl-full pointer-events-none"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-indian-rupee-sign"></i>
+                        <span data-i18n="cardMaxRupeeDiff">સૌથી વધુ રૂપિયામાં તફાવત (₹)</span>
+                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold" id="topRupeeDiffVal">₹0.00</span>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-xl font-extrabold" id="topRupeeDiffName">-</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="topRupeeDiffPrices">Close: ₹0 → Open: ₹0</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs">
+                    <span class="text-slate-400" data-i18n="pctDiffLabel">ટકાવારી તફાવત:</span>
+                    <span class="font-bold text-amber-400" id="topRupeeDiffPct">0.00%</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Gap Up vs Gap Down Ratio -->
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span data-i18n="cardMarketMood">ઓપનિંગ માર્કેટ ટ્રેન્ડ</span>
+                    </span>
+                </div>
+                <div class="my-2">
+                    <div class="flex justify-between text-xs font-bold mb-1.5">
+                        <span class="text-emerald-500"><i class="fa-solid fa-caret-up"></i> Gap Up: <span id="gapUpCount">0</span></span>
+                        <span class="text-rose-500">Gap Down: <span id="gapDownCount">0</span> <i class="fa-solid fa-caret-down"></i></span>
+                    </div>
+                    <div class="w-full h-3 bg-rose-500/30 rounded-full overflow-hidden flex">
+                        <div id="sentimentBarUp" class="bg-emerald-500 h-full transition-all duration-500" style="width: 50%"></div>
+                        <div id="sentimentBarDown" class="bg-rose-500 h-full transition-all duration-500" style="width: 50%"></div>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs">
+                    <span class="text-slate-400" data-i18n="avgGapLabel">સરેરાશ તફાવત:</span>
+                    <span class="font-bold text-indigo-400" id="avgGapPct">0.00%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filter, Search & Sorting Bar -->
+        <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl p-4 shadow-sm space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- Filter Tabs: All / Gap Up / Gap Down -->
+                <div class="flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <button onclick="setFilterType('ALL')" id="tab-ALL" class="filter-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-indigo-600 text-white shadow">
+                        <i class="fa-solid fa-fire-flame-curved mr-1"></i>
+                        <span data-i18n="tabAll">સૌથી વધુ તફાવત (બધા)</span>
+                    </button>
+                    <button onclick="setFilterType('GAP_UP')" id="tab-GAP_UP" class="filter-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-arrow-trend-up text-emerald-500 mr-1"></i>
+                        <span data-i18n="tabGapUp">ઉપર ખુલેલા (Gap Up)</span>
+                    </button>
+                    <button onclick="setFilterType('GAP_DOWN')" id="tab-GAP_DOWN" class="filter-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-arrow-trend-down text-rose-500 mr-1"></i>
+                        <span data-i18n="tabGapDown">નીચે ખુલેલા (Gap Down)</span>
+                    </button>
+                </div>
+
+                <!-- Right Controls: Search, Sort & Min Gap % -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Search Input -->
+                    <div class="relative flex-grow sm:flex-grow-0 sm:w-60">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            oninput="renderTable()" 
+                            placeholder="શેરનું નામ શોધો (દા.ત. RELIANCE)..." 
+                            class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-100"
+                        >
+                    </div>
+
+                    <!-- Sort Selector -->
+                    <div class="flex items-center gap-2">
+                        <label for="sortBySelect" class="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:inline" data-i18n="sortLabel">ક્રમ:</label>
+                        <select id="sortBySelect" onchange="renderTable()" class="px-3 py-2 text-xs sm:text-sm rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-indigo-500 font-semibold">
+                            <option value="ABS_PCT" data-i18n="sortAbsPct">સૌથી વધુ % તફાવત (High % Diff)</option>
+                            <option value="ABS_RS" data-i18n="sortAbsRs">સૌથી વધુ ₹ તફાવત (High ₹ Diff)</option>
+                            <option value="GAP_UP_FIRST" data-i18n="sortGapUpFirst">Gap Up થી Gap Down</option>
+                            <option value="GAP_DOWN_FIRST" data-i18n="sortGapDownFirst">Gap Down થી Gap Up</option>
+                            <option value="VOLUME" data-i18n="sortVolume">સૌથી વધુ વોલ્યુમ (Volume)</option>
+                        </select>
+                    </div>
+
+                    <!-- Minimum Gap % Filter -->
+                    <div class="flex items-center gap-2">
+                        <select id="minGapSelect" onchange="renderTable()" class="px-3 py-2 text-xs sm:text-sm rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-indigo-500 font-semibold">
+                            <option value="0" data-i18n="minGap0">બધા તફાવત (All %)</option>
+                            <option value="2" data-i18n="minGap2">2% થી વધુ તફાવત</option>
+                            <option value="4" data-i18n="minGap4">4% થી વધુ તફાવત</option>
+                            <option value="6" data-i18n="minGap6">6% થી વધુ તફાવત</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Stock Screener Table -->
+        <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-darkBorder bg-slate-50/70 dark:bg-slate-900/60 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            <th class="py-3.5 px-4" data-i18n="colRank">#</th>
+                            <th class="py-3.5 px-4" data-i18n="colStock">શેરનું નામ (Stock)</th>
+                            <th class="py-3.5 px-4 text-right" data-i18n="colPrevClose">ગઈકાલનો બંધ (Prev Close)</th>
+                            <th class="py-3.5 px-4 text-right" data-i18n="colTodayOpen">આજનો ખુલતો (Today Open)</th>
+                            <th class="py-3.5 px-4 text-right" data-i18n="colDiffRs">તફાવત (₹ માં)</th>
+                            <th class="py-3.5 px-4 text-center" data-i18n="colDiffPct">તફાવત (% માં)</th>
+                            <th class="py-3.5 px-4 text-right hidden md:table-cell" data-i18n="colLtp">હાલનો ભાવ (LTP)</th>
+                            <th class="py-3.5 px-4 text-center hidden lg:table-cell" data-i18n="colGapStatus">ગેપ સ્ટેટસ (Status)</th>
+                            <th class="py-3.5 px-4 text-center" data-i18n="colAction">ચાર્ટ / વિગત</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stocksTableBody" class="divide-y divide-slate-200 dark:divide-darkBorder text-sm">
+                        <!-- Dynamically Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden py-12 text-center">
+                <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 text-2xl mb-3">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-700 dark:text-slate-200" data-i18n="noStocksTitle">કોઈ શેર મળ્યો નથી</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="noStocksSub">કૃપા કરીને ફિલ્ટર બદલો અથવા બીજા શેરનું નામ શોધો.</p>
+            </div>
+        </section>
+
+        <!-- Quick Instant Gap Calculator Box at Bottom -->
+        <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-calculator text-indigo-500"></i>
+                <h3 class="text-base font-bold" data-i18n="quickCalcTitle">ઝડપી ગેપ કેલ્ક્યુલેટર (તમારા કોઈપણ શેરનો તફાવત અહીં ગણો)</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1" data-i18n="calcPrevCloseLbl">ગઈકાલનો બંધ ભાવ (Yesterday Close ₹)</label>
+                    <input type="number" id="calcPrev" oninput="runQuickCalc()" value="1250" step="0.05" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1" data-i18n="calcTodayOpenLbl">આજનો ખુલતો ભાવ (Today Open ₹)</label>
+                    <input type="number" id="calcOpen" oninput="runQuickCalc()" value="1345" step="0.05" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="bg-slate-100 dark:bg-slate-900/90 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-400 block" data-i18n="calcDiffRsLbl">રૂપિયામાં તફાવત (₹)</span>
+                        <span id="calcResultRs" class="text-lg font-extrabold text-emerald-500">+₹95.00</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block" data-i18n="calcDiffPctLbl">ટકાવારી તફાવત (%)</span>
+                        <span id="calcResultPct" class="text-lg font-extrabold text-emerald-500">+7.60%</span>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="openAddStockModalWithCalc()" class="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm transition shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-table-list"></i>
+                        <span data-i18n="addToTableBtn">આ શેરને લિસ્ટમાં ઉમેરો</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal 1: Stock Visual Gap Details & Candlestick Comparison -->
+    <div id="stockDetailModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-fadeIn">
+            <div class="flex items-start justify-between border-b border-slate-200 dark:border-darkBorder pb-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 id="modalStockSymbol" class="text-xl font-extrabold">RELIANCE</h3>
+                        <span id="modalGapBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/10 text-emerald-400">GAP UP</span>
+                    </div>
+                    <p id="modalStockName" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Reliance Industries Ltd</p>
+                </div>
+                <button onclick="closeDetailModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Visual Price Comparison Boxes -->
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <span class="text-[11px] text-slate-400 block" data-i18n="colPrevClose">ગઈકાલનો બંધ</span>
+                    <span id="modalPrevClose" class="text-base font-extrabold mt-1 block">₹0.00</span>
+                </div>
+                <div class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30">
+                    <span class="text-[11px] text-indigo-300 block" data-i18n="colDiffPct">ઓપનિંગ તફાવત</span>
+                    <span id="modalDiffCombined" class="text-base font-extrabold mt-1 block text-emerald-400">+₹0 (+0%)</span>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <span class="text-[11px] text-slate-400 block" data-i18n="colTodayOpen">આજનો ખુલતો</span>
+                    <span id="modalTodayOpen" class="text-base font-extrabold mt-1 block">₹0.00</span>
+                </div>
+            </div>
+
+            <!-- Visual Gap Diagram (SVG) -->
+            <div class="bg-slate-950 rounded-xl p-4 border border-slate-800">
+                <div class="text-xs font-semibold text-slate-400 mb-3 flex justify-between items-center">
+                    <span><i class="fa-solid fa-chart-column text-indigo-400 mr-1"></i> ગઈકાલનો બંધ vs આજનો ખુલતો ભાવ (Visual Gap)</span>
+                    <span id="modalReasonBadge" class="text-[11px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Reason</span>
+                </div>
+                <div id="visualGapSvgContainer" class="w-full h-44 flex items-center justify-center">
+                    <!-- Dynamic SVG injected here -->
+                </div>
+            </div>
+
+            <!-- Trading Levels Info -->
+            <div class="bg-slate-100 dark:bg-slate-900/70 rounded-xl p-3.5 text-xs space-y-2 border border-slate-200 dark:border-slate-800">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Gap Fill Level (ગેપ પૂરાવાનો ભાવ):</span>
+                    <span id="modalGapFillLevel" class="font-bold">₹0.00</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">હાલનો ભાવ (Current LTP):</span>
+                    <span id="modalCurrentLtp" class="font-bold">₹0.00</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">ટ્રેડિંગ સ્ટેટસ (Intraday Action):</span>
+                    <span id="modalStatusDesc" class="font-bold text-emerald-400">-</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="closeDetailModal()" class="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs sm:text-sm font-bold transition">
+                    બંધ કરો (Close)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Add Custom Stock or Paste CSV Data -->
+    <div id="addStockModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-darkBorder pb-3">
+                <h3 class="text-lg font-extrabold flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-indigo-500"></i>
+                    <span>નવો શેર ઉમેરો અથવા CSV ડેટા પેસ્ટ કરો</span>
+                </h3>
+                <button onclick="closeAddStockModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Single Stock Form -->
+            <form onsubmit="handleAddSingleStock(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">શેર સિમ્બોલ (Symbol)*</label>
+                        <input type="text" id="inputSymbol" required placeholder="દા.ત. TATAMOTORS" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm font-bold uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">કંપનીનું નામ / કારણ</label>
+                        <input type="text" id="inputReason" placeholder="દા.ત. Strong Results" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">ગઈકાલનો Close ભાવ (₹)*</label>
+                        <input type="number" step="0.05" id="inputPrevClose" required placeholder="500.00" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">આજનો Open ભાવ (₹)*</label>
+                        <input type="number" step="0.05" id="inputTodayOpen" required placeholder="545.00" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm font-bold">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition">
+                    શેર ઉમેરો (Add Stock)
+                </button>
+            </form>
+
+            <!-- Bulk Paste Section -->
+            <div class="pt-3 border-t border-slate-200 dark:border-darkBorder space-y-2">
+                <label class="block text-xs font-semibold text-slate-400">
+                    અથવા એકસાથે ઘણા શેર ઉમેરો (Format: <code class="text-indigo-400">SYMBOL, PREV_CLOSE, TODAY_OPEN</code>)
+                </label>
+                <textarea id="bulkCsvInput" rows="3" placeholder="SBIN, 780, 815&#10;INFY, 1850, 1790" class="w-full p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono"></textarea>
+                <button onclick="handleBulkImport()" type="button" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
+                    બલ્ક ડેટા લોડ કરો (Import Bulk List)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastBox" class="fixed bottom-5 right-5 z-50 hidden bg-indigo-600 text-white px-4 py-3 rounded-xl shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toastMessage">ડેટા અપડેટ થઈ ગયો છે!</span>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- Initial Realistic Indian Stock Market Dataset (NSE) ---
+        let stocksData = [
+            { symbol: "ZOMATO", name: "Zomato Ltd", prevClose: 248.50, todayOpen: 274.80, ltp: 279.10, volume: "4.8 Cr", reason: "Q2 Profit Surge" },
+            { symbol: "TATAMOTORS", name: "Tata Motors Ltd", prevClose: 912.00, todayOpen: 846.50, ltp: 852.30, volume: "3.2 Cr", reason: "JLR Guidance Cut" },
+            { symbol: "ADANIENT", name: "Adani Enterprises", prevClose: 2840.00, todayOpen: 3065.00, ltp: 3090.00, volume: "1.5 Cr", reason: "Airport Biz Expansion" },
+            { symbol: "IREDA", name: "Indian Renewable Energy", prevClose: 215.40, todayOpen: 238.90, ltp: 235.00, volume: "5.1 Cr", reason: "FII Stake Increase" },
+            { symbol: "HDFCBANK", name: "HDFC Bank Ltd", prevClose: 1680.00, todayOpen: 1758.00, ltp: 1769.40, volume: "2.9 Cr", reason: "MSCI Weightage Inflow" },
+            { symbol: "BAJFINANCE", name: "Bajaj Finance Ltd", prevClose: 7120.00, todayOpen: 6690.00, ltp: 6740.00, volume: "85 L", reason: "NIM Margin Pressure" },
+            { symbol: "SUZLON", name: "Suzlon Energy Ltd", prevClose: 68.20, todayOpen: 74.95, ltp: 75.00, volume: "9.4 Cr", reason: "Large Wind Order Win" },
+            { symbol: "INFY", name: "Infosys Ltd", prevClose: 1890.00, todayOpen: 1785.00, ltp: 1802.50, volume: "1.9 Cr", reason: "ADR Down 5.5% Overnight" },
+            { symbol: "RELIANCE", name: "Reliance Industries", prevClose: 2745.00, todayOpen: 2838.00, ltp: 2855.00, volume: "1.8 Cr", reason: "O2C & Jio Tariff Boost" },
+            { symbol: "DIXON", name: "Dixon Technologies", prevClose: 13850.00, todayOpen: 14920.00, ltp: 15080.00, volume: "42 L", reason: "PLI Mobile Export Boom" },
+            { symbol: "INDUSINDBK", name: "IndusInd Bank Ltd", prevClose: 1280.00, todayOpen: 1142.00, ltp: 1125.00, volume: "2.4 Cr", reason: "MFI Provisioning Spike" },
+            { symbol: "HAL", name: "Hindustan Aeronautics", prevClose: 4420.00, todayOpen: 4695.00, ltp: 4730.00, volume: "76 L", reason: "Defense DAC Approval" },
+            { symbol: "TRENT", name: "Trent Ltd (Zudio)", prevClose: 7450.00, todayOpen: 7985.00, ltp: 7890.00, volume: "54 L", reason: "Store Addition Beat" },
+            { symbol: "PAYTM", name: "One 97 Communications", prevClose: 725.00, todayOpen: 668.00, ltp: 682.00, volume: "2.1 Cr", reason: "Block Deal Discount" },
+            { symbol: "SBIN", name: "State Bank of India", prevClose: 812.00, todayOpen: 846.00, ltp: 851.20, volume: "3.1 Cr", reason: "PSU Bank Rally" },
+            { symbol: "ASIANPAINT", name: "Asian Paints Ltd", prevClose: 2940.00, todayOpen: 2765.00, ltp: 2748.00, volume: "95 L", reason: "Weak Volume Growth" }
+        ];
+
+        let currentFilterType = 'ALL'; // 'ALL', 'GAP_UP', 'GAP_DOWN'
+        let currentLang = 'GU'; // 'GU' or 'EN'
+
+        // Bilingual Dictionary
+        const i18n = {
+            GU: {
+                headerSub: "ગઈકાલના Close અને આજના Open વચ્ચે સૌથી વધુ તફાવત ધરાવતા શેરો",
+                addStockBtn: "નવો શેર ઉમેરો / CSV",
+                refreshBtn: "નવો ભાવ લોડ કરો",
+                formulaBadge: "ગણતરીની રીત (Gap Formula)",
+                bannerTitle: "આજનો ખુલતો ભાવ (Today's Open) − ગઈકાલનો બંધ ભાવ (Yesterday's Close) = ઓપનિંગ તફાવત",
+                bannerSub: "જે શેરમાં સવારે 9:15 વાગ્યે ખુલતાની સાથે જ ગઈકાલ કરતા સૌથી મોટો ઉછાળો (Gap Up) કે કડાકો (Gap Down) થયો હોય તેનું લિસ્ટ નીચે મુજબ છે.",
+                marketOpenTime: "માર્કેટ ઓપનિંગ",
+                totalScanned: "સ્કેન કરેલા શેર",
+                cardMaxGapUp: "સૌથી મોટો Gap Up (%)",
+                cardMaxGapDown: "સૌથી મોટો Gap Down (%)",
+                cardMaxRupeeDiff: "સૌથી વધુ રૂપિયામાં તફાવત (₹)",
+                cardMarketMood: "ઓપનિંગ માર્કેટ ટ્રેન્ડ",
+                diffLabel: "તફાવત:",
+                pctDiffLabel: "ટકાવારી તફાવત:",
+                avgGapLabel: "સરેરાશ તફાવત:",
+                tabAll: "સૌથી વધુ તફાવત (બધા)",
+                tabGapUp: "ઉપર ખુલેલા (Gap Up)",
+                tabGapDown: "નીચે ખુલેલા (Gap Down)",
+                sortLabel: "ક્રમ:",
+                colRank: "#",
+                colStock: "શેરનું નામ (Stock)",
+                colPrevClose: "ગઈકાલનો બંધ (Prev Close)",
+                colTodayOpen: "આજનો ખુલતો (Today Open)",
+                colDiffRs: "તફાવત (₹ માં)",
+                colDiffPct: "તફાવત (% માં)",
+                colLtp: "હાલનો ભાવ (LTP)",
+                colGapStatus: "ગેપ સ્ટેટસ (Status)",
+                colAction: "ચાર્ટ / વિગત",
+                quickCalcTitle: "ઝડપી ગેપ કેલ્ક્યુલેટર (તમારા કોઈપણ શેરનો તફાવત અહીં ગણો)",
+                calcPrevCloseLbl: "ગઈકાલનો બંધ ભાવ (Yesterday Close ₹)",
+                calcTodayOpenLbl: "આજનો ખુલતો ભાવ (Today Open ₹)",
+                calcDiffRsLbl: "રૂપિયામાં તફાવત (₹)",
+                calcDiffPctLbl: "ટકાવારી તફાવત (%)",
+                addToTableBtn: "આ શેરને લિસ્ટમાં ઉમેરો"
+            },
+            EN: {
+                headerSub: "Stocks with the Biggest Difference Between Yesterday's Close & Today's Open",
+                addStockBtn: "Add Stock / CSV",
+                refreshBtn: "Simulate Open",
+                formulaBadge: "Gap Calculation Formula",
+                bannerTitle: "Today's Opening Price − Yesterday's Closing Price = Opening Gap Difference",
+                bannerSub: "Instantly spot stocks that opened with the largest positive (Gap Up) or negative (Gap Down) difference at 9:15 AM.",
+                marketOpenTime: "Market Open",
+                totalScanned: "Total Scanned",
+                cardMaxGapUp: "Biggest Gap Up (%)",
+                cardMaxGapDown: "Biggest Gap Down (%)",
+                cardMaxRupeeDiff: "Biggest ₹ Difference",
+                cardMarketMood: "Opening Gap Ratio",
+                diffLabel: "Difference:",
+                pctDiffLabel: "Percentage Diff:",
+                avgGapLabel: "Avg Absolute Gap:",
+                tabAll: "Biggest Diff (All)",
+                tabGapUp: "Gap Up Only ▲",
+                tabGapDown: "Gap Down Only ▼",
+                sortLabel: "Sort:",
+                colRank: "#",
+                colStock: "Stock Name",
+                colPrevClose: "Yesterday Close",
+                colTodayOpen: "Today Open",
+                colDiffRs: "Diff (₹)",
+                colDiffPct: "Diff (%)",
+                colLtp: "Current LTP",
+                colGapStatus: "Gap Status",
+                colAction: "Visual Gap",
+                quickCalcTitle: "Quick Gap Calculator (Check Any Custom Stock Price)",
+                calcPrevCloseLbl: "Yesterday's Close Price (₹)",
+                calcTodayOpenLbl: "Today's Opening Price (₹)",
+                calcDiffRsLbl: "Rupee Difference (₹)",
+                calcDiffPctLbl: "Percentage Gap (%)",
+                addToTableBtn: "Add Stock to Screener"
+            }
+        };
+
+        // --- Compute Enriched Stock Metrics ---
+        function getEnrichedStocks() {
+            return stocksData.map(item => {
+                const diffRs = item.todayOpen - item.prevClose;
+                const diffPct = (diffRs / item.prevClose) * 100;
+                const absPct = Math.abs(diffPct);
+                const absRs = Math.abs(diffRs);
+                const isGapUp = diffRs >= 0;
+
+                // Determine if Gap Held, Extended, or Filled based on current LTP
+                let gapStatus = "";
+                let gapStatusGu = "";
+                let statusColor = "";
+
+                if (isGapUp) {
+                    if (item.ltp >= item.todayOpen) {
+                        gapStatus = "Gap Extended ▲";
+                        gapStatusGu = "ગેપ ટકી રહ્યો ▲";
+                        statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    } else if (item.ltp <= item.prevClose) {
+                        gapStatus = "Gap Filled ⚠";
+                        gapStatusGu = "ગેપ પૂરાઈ ગયો ⚠";
+                        statusColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    } else {
+                        gapStatus = "Partial Fill";
+                        gapStatusGu = "થોડો નીચે આવ્યો";
+                        statusColor = "bg-sky-500/10 text-sky-400 border-sky-500/20";
+                    }
+                } else {
+                    if (item.ltp <= item.todayOpen) {
+                        gapStatus = "Gap Extended ▼";
+                        gapStatusGu = "વધુ તૂટ્યો ▼";
+                        statusColor = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                    } else if (item.ltp >= item.prevClose) {
+                        gapStatus = "Gap Recovered ✔";
+                        gapStatusGu = "રિકવર થયો ✔";
+                        statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    } else {
+                        gapStatus = "Recovering";
+                        gapStatusGu = "થોડો રિકવર";
+                        statusColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    }
+                }
+
+                return {
+                    ...item,
+                    diffRs,
+                    diffPct,
+                    absPct,
+                    absRs,
+                    isGapUp,
+                    gapStatus: currentLang === 'GU' ? gapStatusGu : gapStatus,
+                    statusColor
+                };
+            });
+        }
+
+        // --- Update Top Summary Cards ---
+        function updateSummaryCards(enrichedList) {
+            if (!enrichedList.length) return;
+
+            document.getElementById('totalStocksCount').textContent = `${enrichedList.length} ${currentLang === 'GU' ? 'શેરો' : 'Stocks'}`;
+
+            // 1. Biggest Gap Up %
+            const gapUps = enrichedList.filter(s => s.diffPct > 0).sort((a, b) => b.diffPct - a.diffPct);
+            if (gapUps.length > 0) {
+                const topUp = gapUps[0];
+                document.getElementById('topGapUpName').textContent = topUp.symbol;
+                document.getElementById('topGapUpPct').textContent = `+${topUp.diffPct.toFixed(2)}%`;
+                document.getElementById('topGapUpPrices').textContent = `Close: ₹${topUp.prevClose.toFixed(2)} → Open: ₹${topUp.todayOpen.toFixed(2)}`;
+                document.getElementById('topGapUpRs').textContent = `+₹${topUp.diffRs.toFixed(2)}`;
+            }
+
+            // 2. Biggest Gap Down %
+            const gapDowns = enrichedList.filter(s => s.diffPct < 0).sort((a, b) => a.diffPct - b.diffPct);
+            if (gapDowns.length > 0) {
+                const topDown = gapDowns[0];
+                document.getElementById('topGapDownName').textContent = topDown.symbol;
+                document.getElementById('topGapDownPct').textContent = `${topDown.diffPct.toFixed(2)}%`;
+                document.getElementById('topGapDownPrices').textContent = `Close: ₹${topDown.prevClose.toFixed(2)} → Open: ₹${topDown.todayOpen.toFixed(2)}`;
+                document.getElementById('topGapDownRs').textContent = `-₹${Math.abs(topDown.diffRs).toFixed(2)}`;
+            }
+
+            // 3. Biggest Absolute Rupee Difference
+            const byRupee = [...enrichedList].sort((a, b) => b.absRs - a.absRs);
+            const topRs = byRupee[0];
+            const rsSign = topRs.diffRs >= 0 ? '+' : '-';
+            document.getElementById('topRupeeDiffName').textContent = topRs.symbol;
+            document.getElementById('topRupeeDiffVal').textContent = `${rsSign}₹${topRs.absRs.toFixed(2)}`;
+            document.getElementById('topRupeeDiffPrices').textContent = `Close: ₹${topRs.prevClose.toFixed(2)} → Open: ₹${topRs.todayOpen.toFixed(2)}`;
+            document.getElementById('topRupeeDiffPct').textContent = `${rsSign}${topRs.absPct.toFixed(2)}%`;
+
+            // 4. Sentiment Bar
+            const upCount = gapUps.length;
+            const downCount = gapDowns.length;
+            const total = enrichedList.length || 1;
+            const upRatio = Math.round((upCount / total) * 100);
+            document.getElementById('gapUpCount').textContent = upCount;
+            document.getElementById('gapDownCount').textContent = downCount;
+            document.getElementById('sentimentBarUp').style.width = `${upRatio}%`;
+            document.getElementById('sentimentBarDown').style.width = `${100 - upRatio}%`;
+
+            const avgAbsGap = enrichedList.reduce((acc, s) => acc + s.absPct, 0) / total;
+            document.getElementById('avgGapPct').textContent = `±${avgAbsGap.toFixed(2)}%`;
+        }
+
+        // --- Render Main Table ---
+        function renderTable() {
+            const enriched = getEnrichedStocks();
+            updateSummaryCards(enriched);
+
+            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+            const sortBy = document.getElementById('sortBySelect').value;
+            const minGap = parseFloat(document.getElementById('minGapSelect').value) || 0;
+
+            // Filter
+            let filtered = enriched.filter(stock => {
+                const matchesSearch = stock.symbol.toLowerCase().includes(searchQuery) ||
+                                      stock.name.toLowerCase().includes(searchQuery) ||
+                                      (stock.reason && stock.reason.toLowerCase().includes(searchQuery));
+                if (!matchesSearch) return false;
+
+                if (currentFilterType === 'GAP_UP' && stock.diffRs <= 0) return false;
+                if (currentFilterType === 'GAP_DOWN' && stock.diffRs >= 0) return false;
+                if (stock.absPct < minGap) return false;
+
+                return true;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                if (sortBy === 'ABS_PCT') return b.absPct - a.absPct;
+                if (sortBy === 'ABS_RS') return b.absRs - a.absRs;
+                if (sortBy === 'GAP_UP_FIRST') return b.diffPct - a.diffPct;
+                if (sortBy === 'GAP_DOWN_FIRST') return a.diffPct - b.diffPct;
+                if (sortBy === 'VOLUME') return parseFloat(b.volume) - parseFloat(a.volume);
+                return b.absPct - a.absPct;
+            });
+
+            const tbody = document.getElementById('stocksTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            const maxAbsPctInList = Math.max(...filtered.map(s => s.absPct), 10);
+
+            tbody.innerHTML = filtered.map((stock, idx) => {
+                const isUp = stock.isGapUp;
+                const sign = isUp ? '+' : '-';
+                const colorText = isUp ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400';
+                const badgeBg = isUp ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20';
+                const barColor = isUp ? 'bg-emerald-500' : 'bg-rose-500';
+                const barWidth = Math.min(100, Math.round((stock.absPct / maxAbsPctInList) * 100));
+                const iconArrow = isUp ? 'fa-arrow-up-right-dots' : 'fa-arrow-down-wide-short';
+
+                return `
+                    <tr class="hover:bg-slate-100/70 dark:hover:bg-slate-800/40 transition group cursor-pointer" onclick="openDetailModal('${stock.symbol}')">
+                        <td class="py-3.5 px-4 font-bold text-slate-400 text-xs">${idx + 1}</td>
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg ${isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs shrink-0">
+                                    <i class="fa-solid ${iconArrow}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                        <span>${stock.symbol}</span>
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hidden sm:inline">${stock.reason || 'Market Move'}</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400">${stock.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-semibold text-slate-600 dark:text-slate-300">
+                            ₹${stock.prevClose.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-extrabold text-slate-900 dark:text-white">
+                            ₹${stock.todayOpen.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-extrabold ${colorText}">
+                            ${sign}₹${stock.absRs.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <div class="flex flex-col items-center">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-extrabold border ${badgeBg} min-w-[80px] text-center">
+                                    ${sign}${stock.absPct.toFixed(2)}%
+                                </span>
+                                <div class="w-20 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+                                    <div class="${barColor} h-full rounded-full" style="width: ${barWidth}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-semibold text-slate-700 dark:text-slate-300 hidden md:table-cell">
+                            ₹${stock.ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </td>
+                        <td class="py-3.5 px-4 text-center hidden lg:table-cell">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${stock.statusColor}">
+                                ${stock.gapStatus}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            <button onclick="event.stopPropagation(); openDetailModal('${stock.symbol}')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-600 dark:text-slate-300 text-xs font-bold transition">
+                                <i class="fa-solid fa-chart-simple mr-1"></i> જુઓ
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- Switch Filter Tabs ---
+        function setFilterType(type) {
+            currentFilterType = type;
+            ['ALL', 'GAP_UP', 'GAP_DOWN'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === type) {
+                    btn.className = "filter-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-indigo-600 text-white shadow";
+                } else {
+                    btn.className = "filter-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800";
+                }
+            });
+            renderTable();
+        }
+
+        // --- Quick Bottom Gap Calculator ---
+        function runQuickCalc() {
+            const prev = parseFloat(document.getElementById('calcPrev').value) || 0;
+            const open = parseFloat(document.getElementById('calcOpen').value) || 0;
+            const resRsEl = document.getElementById('calcResultRs');
+            const resPctEl = document.getElementById('calcResultPct');
+
+            if (prev <= 0) {
+                resRsEl.textContent = "₹0.00";
+                resPctEl.textContent = "0.00%";
+                return;
+            }
+
+            const diffRs = open - prev;
+            const diffPct = (diffRs / prev) * 100;
+            const sign = diffRs >= 0 ? '+' : '-';
+            const colorClass = diffRs >= 0 ? 'text-lg font-extrabold text-emerald-500' : 'text-lg font-extrabold text-rose-500';
+
+            resRsEl.className = colorClass;
+            resPctEl.className = colorClass;
+            resRsEl.textContent = `${sign}₹${Math.abs(diffRs).toFixed(2)}`;
+            resPctEl.textContent = `${sign}${Math.abs(diffPct).toFixed(2)}%`;
+        }
+
+        // --- Open Visual Gap Modal ---
+        function openDetailModal(symbol) {
+            const enriched = getEnrichedStocks();
+            const stock = enriched.find(s => s.symbol === symbol);
+            if (!stock) return;
+
+            document.getElementById('modalStockSymbol').textContent = stock.symbol;
+            document.getElementById('modalStockName').textContent = stock.name;
+            document.getElementById('modalReasonBadge').textContent = stock.reason || 'Opening Volatility';
+
+            const badge = document.getElementById('modalGapBadge');
+            const sign = stock.isGapUp ? '+' : '-';
+            if (stock.isGapUp) {
+                badge.textContent = `GAP UP (${sign}${stock.absPct.toFixed(2)}%)`;
+                badge.className = "px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+            } else {
+                badge.textContent = `GAP DOWN (${sign}${stock.absPct.toFixed(2)}%)`;
+                badge.className = "px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30";
+            }
+
+            document.getElementById('modalPrevClose').textContent = `₹${stock.prevClose.toFixed(2)}`;
+            document.getElementById('modalTodayOpen').textContent = `₹${stock.todayOpen.toFixed(2)}`;
+
+            const combEl = document.getElementById('modalDiffCombined');
+            combEl.textContent = `${sign}₹${stock.absRs.toFixed(2)} (${sign}${stock.absPct.toFixed(2)}%)`;
+            combEl.className = `text-base font-extrabold mt-1 block ${stock.isGapUp ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            document.getElementById('modalGapFillLevel').textContent = `₹${stock.prevClose.toFixed(2)}`;
+            document.getElementById('modalCurrentLtp').textContent = `₹${stock.ltp.toFixed(2)}`;
+            document.getElementById('modalStatusDesc').textContent = stock.gapStatus;
+
+            // Build SVG Visual Comparison of Yesterday Close vs Today Open
+            const svgContainer = document.getElementById('visualGapSvgContainer');
+            const isUp = stock.isGapUp;
+            const yPrev = isUp ? 125 : 45;
+            const yOpen = isUp ? 45 : 125;
+            const gapColor = isUp ? '#10b981' : '#f43f5e';
+
+            svgContainer.innerHTML = `
+                <svg viewBox="0 0 400 170" class="w-full h-full">
+                    <!-- Grid Lines -->
+                    <line x1="30" y1="45" x2="370" y2="45" stroke="#1e293b" stroke-dasharray="4"/>
+                    <line x1="30" y1="125" x2="370" y2="125" stroke="#1e293b" stroke-dasharray="4"/>
+
+                    <!-- Shaded Gap Zone -->
+                    <rect x="110" y="45" width="180" height="80" fill="${gapColor}" fill-opacity="0.12" stroke="${gapColor}" stroke-dasharray="3" rx="6"/>
+
+                    <!-- Yesterday Close Node -->
+                    <circle cx="110" cy="${yPrev}" r="7" fill="#94a3b8"/>
+                    <text x="110" y="${yPrev + (isUp ? 22 : -14)}" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="bold">
+                        ગઈકાલનો Close: ₹${stock.prevClose.toFixed(1)}
+                    </text>
+
+                    <!-- Today Open Node -->
+                    <circle cx="290" cy="${yOpen}" r="8" fill="${gapColor}"/>
+                    <text x="290" y="${yOpen + (isUp ? -14 : 22)}" text-anchor="middle" fill="${gapColor}" font-size="11" font-weight="bold">
+                        આજનો Open: ₹${stock.todayOpen.toFixed(1)}
+                    </text>
+
+                    <!-- Connecting Gap Arrow Line -->
+                    <line x1="118" y1="${yPrev}" x2="282" y2="${yOpen}" stroke="${gapColor}" stroke-width="3"/>
+
+                    <!-- Center Gap Difference Badge -->
+                    <rect x="145" y="72" width="110" height="26" rx="6" fill="#0f172a" stroke="${gapColor}" stroke-width="1.5"/>
+                    <text x="200" y="89" text-anchor="middle" fill="${gapColor}" font-size="11" font-weight="bold">
+                        ${sign}₹${stock.absRs.toFixed(1)} (${sign}${stock.absPct.toFixed(2)}%)
+                    </text>
+                </svg>
+            `;
+
+            document.getElementById('stockDetailModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('stockDetailModal').classList.add('hidden');
+        }
+
+        // --- Add Custom Stock / CSV Modal ---
+        function openAddStockModal() {
+            document.getElementById('addStockModal').classList.remove('hidden');
+        }
+
+        function openAddStockModalWithCalc() {
+            document.getElementById('inputPrevClose').value = document.getElementById('calcPrev').value;
+            document.getElementById('inputTodayOpen').value = document.getElementById('calcOpen').value;
+            openAddStockModal();
+        }
+
+        function closeAddStockModal() {
+            document.getElementById('addStockModal').classList.add('hidden');
+        }
+
+        function handleAddSingleStock(e) {
+            e.preventDefault();
+            const symbol = document.getElementById('inputSymbol').value.trim().toUpperCase();
+            const reason = document.getElementById('inputReason').value.trim() || "Custom Added";
+            const prevClose = parseFloat(document.getElementById('inputPrevClose').value);
+            const todayOpen = parseFloat(document.getElementById('inputTodayOpen').value);
+
+            if (!symbol || isNaN(prevClose) || isNaN(todayOpen) || prevClose <= 0) return;
+
+            // Check if symbol exists
+            const existingIdx = stocksData.findIndex(s => s.symbol === symbol);
+            const newEntry = {
+                symbol,
+                name: `${symbol} India Ltd`,
+                prevClose,
+                todayOpen,
+                ltp: +(todayOpen * (1 + (Math.random() * 0.02 - 0.01))).toFixed(2),
+                volume: "1.2 Cr",
+                reason
+            };
+
+            if (existingIdx >= 0) {
+                stocksData[existingIdx] = newEntry;
+            } else {
+                stocksData.unshift(newEntry);
+            }
+
+            closeAddStockModal();
+            renderTable();
+            showToast(`${symbol} લિસ્ટમાં ઉમેરાઈ ગયો છે!`);
+            e.target.reset();
+        }
+
+        function handleBulkImport() {
+            const raw = document.getElementById('bulkCsvInput').value.trim();
+            if (!raw) return;
+
+            const lines = raw.split('\n');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 3) {
+                    const symbol = parts[0].toUpperCase();
+                    const prevClose = parseFloat(parts[1]);
+                    const todayOpen = parseFloat(parts[2]);
+
+                    if (symbol && !isNaN(prevClose) && !isNaN(todayOpen) && prevClose > 0) {
+                        stocksData.unshift({
+                            symbol,
+                            name: `${symbol} Corp`,
+                            prevClose,
+                            todayOpen,
+                            ltp: todayOpen,
+                            volume: "95 L",
+                            reason: "CSV Import"
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            if (addedCount > 0) {
+                document.getElementById('bulkCsvInput').value = '';
+                closeAddStockModal();
+                renderTable();
+                showToast(`${addedCount} નવા શેર સફળતાપૂર્વક ઉમેરાયા!`);
+            }
+        }
+
+        // --- Simulate New Market Opening Prices ---
+        function simulateNewOpening() {
+            const icon = document.getElementById('refreshIcon');
+            icon.classList.add('fa-spin');
+
+            setTimeout(() => {
+                stocksData = stocksData.map(stock => {
+                    // Generate realistic gap between -8.5% and +9.5%
+                    const randomGapPct = (Math.random() * 16 - 7.5) / 100;
+                    const newOpen = +(stock.prevClose * (1 + randomGapPct)).toFixed(2);
+                    const intradayDrift = (Math.random() * 0.04 - 0.02);
+                    const newLtp = +(newOpen * (1 + intradayDrift)).toFixed(2);
+
+                    return {
+                        ...stock,
+                        todayOpen: newOpen,
+                        ltp: newLtp
+                    };
+                });
+
+                icon.classList.remove('fa-spin');
+                renderTable();
+                showToast(currentLang === 'GU' ? "નવા ઓપનિંગ ભાવ અપડેટ થયા!" : "Simulated new market opening gaps!");
+            }, 350);
+        }
+
+        // --- Toggle Gujarati / English ---
+        function toggleLanguage() {
+            currentLang = currentLang === 'GU' ? 'EN' : 'GU';
+            const dict = i18n[currentLang];
+
+            document.getElementById('headerSubtitle').textContent = dict.headerSub;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
+
+            renderTable();
+        }
+
+        // --- Toggle Dark / Light Mode ---
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                themeIcon.className = "fa-solid fa-moon text-indigo-600";
+            } else {
+                htmlEl.classList.add('dark');
+                themeIcon.className = "fa-solid fa-sun text-amber-400";
+            }
+        }
+
+        // --- Toast Helper ---
+        function showToast(msg) {
+            const box = document.getElementById('toastBox');
+            document.getElementById('toastMessage').textContent = msg;
+            box.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize on Window Load
+        window.onload = function() {
+            renderTable();
+            runQuickCalc();
+        };
+    </script>
+</body>
+</html>
